@@ -1,0 +1,36 @@
+{
+  "name": "medinfras-api",
+  "version": "1.0.0",
+  "description": "REST API gateway that exposes Medinfras .NET business layers (via node-api-dotnet) as HTTP endpoints.",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "medinfras",
+    "api",
+    "express",
+    "typescript",
+    "node-api-dotnet"
+  ],
+  "license": "UNLICENSED",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-api-dotnet": "^0.9.26",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.9",
+    "@types/swagger-ui-express": "^4.1.6",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
+  }
+}
