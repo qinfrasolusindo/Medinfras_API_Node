@@ -6,11 +6,11 @@
  *   - a single condition                              -> cond(...)
  *   - AND of several conditions                        -> and(cond(...), cond(...))
  *   - OR, and AND/OR nested arbitrarily deep            -> and(cond(...), or(cond(...), cond(...)))
- *   - a hand-written fragment you don't want built      -> raw("HealthcareID = '001'")
+ *   - a hand-written fragment that don't want built      -> raw("HealthcareID = '001'")
  *   - no filter at all (method that takes "get everything") -> pass undefined/null, returns ''
  *
  * Every *value* still goes through quoting/escaping - only `raw()` bypasses
- * it, so use raw() only for fragments you trust (e.g. constants in your own
+ * it, so use raw() only for fragments thats been trusted (e.g. constants in 
  * code), never directly on unescaped user input.
  */
 
@@ -27,22 +27,21 @@ export type FilterNode =
   | { type: 'raw'; expression: string }
   | { type: 'group'; join: 'AND' | 'OR'; nodes: FilterNode[] };
 
-/** A single condition, e.g. cond('HealthcareID', '=', '001'). */
+
 export function cond(field: string, operator: FilterOperator, value: FilterCondition['value']): FilterNode {
   return { type: 'condition', condition: { field, operator, value } };
 }
 
-/** A pre-built fragment, inserted as-is. Only use with trusted/constant strings. */
+
 export function raw(expression: string): FilterNode {
   return { type: 'raw', expression };
 }
 
-/** Combines nodes with AND, wrapping in parentheses if there's more than one. */
+
 export function and(...nodes: FilterNode[]): FilterNode {
   return { type: 'group', join: 'AND', nodes };
 }
 
-/** Combines nodes with OR, wrapping in parentheses if there's more than one. */
 export function or(...nodes: FilterNode[]): FilterNode {
   return { type: 'group', join: 'OR', nodes };
 }

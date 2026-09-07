@@ -71,7 +71,7 @@ const getPatientHistory: McpToolDefinition<GetPatientHistoryArgs> = {
     const { mrn, patientName, dateFrom, dateTo, LastNVisits } = args;
 
     // At least one patient identifier is required.
-    if (mrn == null && !patientName) {
+    if (mrn === null && !patientName) {
       throw new Error("Either MRN or patientName must be provided.");
     }
 

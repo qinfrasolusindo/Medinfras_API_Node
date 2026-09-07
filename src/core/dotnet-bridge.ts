@@ -4,14 +4,8 @@ import { AppError } from './app-error';
 /**
  * Thin, lazy-loaded wrapper around node-api-dotnet.
  *
- * Every business-layer service should go through `getBusinessLayer()` and
- * `toJson()` instead of importing node-api-dotnet directly. That keeps the
- * "how do we talk to .NET" concern in exactly one file, so if the loading
- * strategy ever changes (different runtime, different DLL, mocking for
- * tests, etc.) only this file needs to change.
+ * Every business-layer service should go through `getBusinessLayer()`
  */
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DotnetAssembly = any;
 
 let assembly: DotnetAssembly | null = null;
@@ -69,7 +63,7 @@ export async function getBusinessLayer(): Promise<DotnetAssembly> {
  */
 export async function toJson<T = unknown>(dotnetObject: unknown): Promise<T> {
   const asm = await getAssembly();
-  const json: string = asm.Function.ToJson(dotnetObject);
+  const json: string = asm.Function.ListToJson(dotnetObject);
   return JSON.parse(json) as T;
 }
 

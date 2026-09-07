@@ -1,25 +1,31 @@
-import { NextFunction, Request, Response } from 'express';
-import { env } from '../config/env';
-import { AppError } from '../core/app-error';
-import { ApiErrorBody } from '../core/response.util';
-import { logger } from '../core/logger';
+import { NextFunction, Request, Response } from "express";
+import { env } from "../config/env";
+import { AppError } from "../core/app-error";
+import { ApiErrorBody } from "../core/response.util";
+import { logger } from "../core/logger";
 
 /**
  * Last middleware in the chain. Any error passed to next(err) anywhere in
  * the app (including from asyncHandler) ends up here, so this is the only
  * place that needs to know how to turn an error into an HTTP response.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
+export function errorHandler(
+  err: unknown,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+): void {
+  void _next;
+
   const isAppError = err instanceof AppError;
   const statusCode = isAppError ? err.statusCode : 500;
-  const message = err instanceof Error ? err.message : 'Internal server error';
+  const message = err instanceof Error ? err.message : "Internal server error";
 
   if (!isAppError) {
     // Unexpected errors (bugs, .NET bridge crashes, etc.) are worth logging
     // with the full stack; expected AppErrors are just normal control flow.
-    // eslint-disable-next-line no-console
-    logger.error('Unhandled error in request', err);
+
+    logger.error("Unhandled error in request", err);
     console.error(err);
   }
 
@@ -28,7 +34,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   // exactly what failed without digging through server logs. In
   // production, only the message goes out - never internal stack details.
   const body: ApiErrorBody & { stack?: string } = { success: false, message };
-  if (env.NODE_ENV !== 'production' && err instanceof Error) {
+  if (env.NODE_ENV !== "production" && err instanceof Error) {
     body.stack = err.stack;
   }
 

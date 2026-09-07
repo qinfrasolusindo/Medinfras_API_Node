@@ -1,8 +1,13 @@
 {
-    "cSpell.language": "en,id-id",
-    "cSpell.words": [
-        "ADALAH",
-        "Getv",
-        "Medinfras"
-    ]
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 3,
+  "editor.insertSpaces": true,
+  "editor.rulers": [120],
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "never"
+  },
+  "cSpell.language": "en,id-id",
+  "cSpell.words": ["ADALAH", "alkes", "Getv", "isdeleted", "Medinfras"],
+  "js/ts.tsdk.path": "node_modules\\typescript\\lib"
 }

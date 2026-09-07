@@ -1,17 +1,20 @@
-import fs from 'fs';
-import path from 'path';
-import { McpToolDefinition } from '../types';
+import fs from "fs";
+import path from "path";
+import { McpToolDefinition } from "../types";
 
 const TOOL_FILE_PATTERN = /\.tool\.(ts|js)$/;
 
-function loadTools(): McpToolDefinition[] {
-  const files = fs.readdirSync(__dirname).filter((file) => TOOL_FILE_PATTERN.test(file));
+async function loadTools(): Promise<McpToolDefinition[]> {
+  const files = fs
+    .readdirSync(__dirname)
+    .filter((file) => TOOL_FILE_PATTERN.test(file));
 
-  return files.map((file) => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require(path.join(__dirname, file));
-    return (mod.default ?? mod) as McpToolDefinition;
-  });
+  return Promise.all(
+    files.map(async (file) => {
+      const mod = await import(path.join(__dirname, file));
+      return (mod.default ?? mod) as McpToolDefinition;
+    }),
+  );
 }
 
 /**
@@ -19,4 +22,4 @@ function loadTools(): McpToolDefinition[] {
  * MCP tool: drop a new `<name>.tool.ts` file next to this one, following
  * get-patient-history.tool.ts as a template. Nothing else needs to change.
  */
-export const mcpTools: McpToolDefinition[] = loadTools();
+export const mcpTools: Promise<McpToolDefinition[]> = loadTools();

@@ -17,7 +17,13 @@ const patientHistory: BusinessLayerDefinition = {
       route: "get",
       summary:
         "Get a patient's medical history using MRN or patient name, optionally filtered by visit date range or limited to the most recent visits.",
-      example: { mrn: 123456, patientName: "John Doe", dateFrom: "2023-01-01", dateTo: "2023-12-31", LastNVisits: 5 },
+      example: {
+        mrn: 123456,
+        patientName: "John Doe",
+        dateFrom: "2023-01-01",
+        dateTo: "2023-12-31",
+        LastNVisits: 5,
+      },
       validate: (body: GetBody) => {
         if (!body?.mrn && !body?.patientName) {
           return 'At least one of "mrn" or "patientName" must be provided.';
@@ -30,15 +36,31 @@ const patientHistory: BusinessLayerDefinition = {
         }
         return null;
       },
-      method: "GetSettingParameterDt",
-      buildArgs: (body: GetBody) => [
-        body.mrn ?? null,
-        body.patientName ?? null,
-        body.dateFrom ?? null,
-        body.dateTo ?? null,
-        body.LastNVisits ?? 0,
-      ],
-      resultShape: "object",
+      handler: async (body: GetBody, ctx) => {
+        const businessLayer = await ctx.getBusinessLayer();
+        const method = businessLayer["GetPatientHistoryMCP"];
+
+        if (typeof method !== "function") {
+          throw new Error(
+            '.NET method "GetPatientHistoryMCP" was not found on BusinessLayer.',
+          );
+        }
+
+        const historyResult = method(
+          body.mrn ?? null,
+          body.patientName ?? "",
+          body.dateFrom ?? null,
+          body.dateTo ?? null,
+          body.LastNVisits ?? 0,
+        );
+
+        const data = historyResult.map((item: { JsonResult: string }) => ({
+          ...item,
+          JsonResult: JSON.parse(item.JsonResult),
+        }));
+
+        return { historyResult: data };
+      },
     },
   ],
 };

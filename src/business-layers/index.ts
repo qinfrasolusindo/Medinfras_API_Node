@@ -1,7 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { BusinessLayerDefinition } from './types';
-
+import fs from "fs";
+import path from "path";
+import { BusinessLayerDefinition } from "./types";
 
 const DEFINITION_FILE_PATTERN = /\.definition\.(ts|js)$/;
 
@@ -33,14 +32,15 @@ function walk(dir: string): string[] {
   return files;
 }
 
-function loadDefinitions(): BusinessLayerDefinition[] {
+async function loadDefinitions(): Promise<BusinessLayerDefinition[]> {
   const files = walk(__dirname);
 
-  const definitions = files.map((file) => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require(file);
-    return (mod.default ?? mod) as BusinessLayerDefinition;
-  });
+  const definitions = await Promise.all(
+    files.map(async (file) => {
+      const mod = await import(file);
+      return (mod.default ?? mod) as BusinessLayerDefinition;
+    }),
+  );
 
   assertNoDuplicateRoutes(definitions);
 
@@ -48,9 +48,7 @@ function loadDefinitions(): BusinessLayerDefinition[] {
 }
 
 // Pastikan tidak ada dua operation dengan route yang sama.
-function assertNoDuplicateRoutes(
-  definitions: BusinessLayerDefinition[]
-): void {
+function assertNoDuplicateRoutes(definitions: BusinessLayerDefinition[]): void {
   const seen = new Set<string>();
 
   for (const def of definitions) {
@@ -59,7 +57,7 @@ function assertNoDuplicateRoutes(
 
       if (seen.has(url)) {
         throw new Error(
-          `Duplicate route detected: ${url}. Two definitions define the same group name + route.`
+          `Duplicate route detected: ${url}. Two definitions define the same group name + route.`,
         );
       }
 
@@ -74,5 +72,5 @@ function assertNoDuplicateRoutes(
  *
  * Untuk menambah business layer, cukup buat file definition baru.
  */
-export const businessLayers: BusinessLayerDefinition[] = loadDefinitions();
-
+export const businessLayers: Promise<BusinessLayerDefinition[]> =
+  loadDefinitions();

@@ -1,4 +1,4 @@
-import { businessLayers } from '../business-layers';
+import { businessLayers } from "../business-layers";
 
 /**
  * Every operation already describes itself (route, summary, example) in
@@ -6,10 +6,10 @@ import { businessLayers } from '../business-layers';
  * registry instead of scanning JSDoc comments across N route files. Add a
  * business layer or operation -> its docs appear automatically.
  */
-export function buildSwaggerSpec() {
+export async function buildSwaggerSpec() {
   const paths: Record<string, unknown> = {};
 
-  for (const def of businessLayers) {
+  for (const def of await businessLayers) {
     for (const op of def.operations) {
       paths[`/medinfras/api/${def.name}/${op.route}`] = {
         post: {
@@ -18,30 +18,30 @@ export function buildSwaggerSpec() {
           requestBody: {
             required: true,
             content: {
-              'application/json': {
-                schema: { type: 'object' },
+              "application/json": {
+                schema: { type: "object" },
                 example: op.example ?? {},
               },
             },
           },
           responses: {
             200: {
-              description: 'Success',
+              description: "Success",
               content: {
-                'application/json': {
+                "application/json": {
                   schema: {
-                    type: 'object',
+                    type: "object",
                     properties: {
-                      success: { type: 'boolean', example: true },
-                      message: { type: 'string', example: 'OK' },
+                      success: { type: "boolean", example: true },
+                      message: { type: "string", example: "OK" },
                       data: {},
                     },
                   },
                 },
               },
             },
-            400: { description: 'Validation error' },
-            500: { description: '.NET bridge or business-layer error' },
+            400: { description: "Validation error" },
+            500: { description: ".NET bridge or business-layer error" },
           },
         },
       };
@@ -49,14 +49,14 @@ export function buildSwaggerSpec() {
   }
 
   return {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Medinfras API',
-      version: '1.0.0',
+      title: "Medinfras API",
+      version: "1.0.0",
       description:
-        'REST API gateway exposing Medinfras .NET business layers over HTTP. Every business layer group is mounted at /medinfras/api/{groupName}/{operation}.',
+        "REST API gateway exposing Medinfras .NET business layers over HTTP. Every business layer group is mounted at /medinfras/api/{groupName}/{operation}.",
     },
-    servers: [{ url: '/', description: 'Current server' }],
+    servers: [{ url: "/", description: "Current server" }],
     paths,
   };
 }
