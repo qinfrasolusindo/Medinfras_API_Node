@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { env } from '../config/env';
 import { AppError } from '../core/app-error';
 import { ApiErrorBody } from '../core/response.util';
+import { logger } from '../core/logger';
 
 /**
  * Last middleware in the chain. Any error passed to next(err) anywhere in
@@ -18,6 +19,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     // Unexpected errors (bugs, .NET bridge crashes, etc.) are worth logging
     // with the full stack; expected AppErrors are just normal control flow.
     // eslint-disable-next-line no-console
+    logger.error('Unhandled error in request', err);
     console.error(err);
   }
 
