@@ -26,11 +26,6 @@ async function loadAssembly(): Promise<DotnetAssembly> {
       'DOTNET_DLL_PATH is not configured. Set it in your .env file (see .env.example).'
     );
   }
-
-  // node-api-dotnet ships as an ESM-only package, so it must be loaded via a
-  // dynamic import() even though the rest of this project uses CommonJS.
-  // The runtime (e.g. "net472") is configurable via DOTNET_RUNTIME so this
-  // bridge keeps working if the target framework changes later.
   const dotnetModule = await import(`node-api-dotnet/${env.DOTNET_RUNTIME}`);
   const dotnet = dotnetModule.default ?? dotnetModule;
 
@@ -42,9 +37,7 @@ async function loadAssembly(): Promise<DotnetAssembly> {
       `Failed to load .NET DLL at "${env.DOTNET_DLL_PATH}": ${(err as Error).message}`
     );
   }
-
-  // This namespace is specific to the Medinfras DLL. If a future DLL exposes
-  // business layers under a different namespace, update it here only.
+  
   assembly = dotnet.QIS.Medinfras.Data.Service;
   return assembly;
 }
@@ -74,9 +67,9 @@ export async function getBusinessLayer(): Promise<DotnetAssembly> {
  * Converts a single .NET object returned by a BusinessLayer call into a
  * plain JS object/array, using the DLL's own `Function.ToJson` helper.
  */
-export async function ListToJson<T = unknown>(dotnetObject: unknown): Promise<T> {
+export async function toJson<T = unknown>(dotnetObject: unknown): Promise<T> {
   const asm = await getAssembly();
-  const json: string = asm.Function.ListToJson(dotnetObject);
+  const json: string = asm.Function.ToJson(dotnetObject);
   return JSON.parse(json) as T;
 }
 
@@ -86,5 +79,5 @@ export async function ListToJson<T = unknown>(dotnetObject: unknown): Promise<T>
  */
 export async function toJsonList<T = unknown>(dotnetList: unknown[] | null | undefined): Promise<T[]> {
   if (!dotnetList || dotnetList.length === 0) return [];
-  return Promise.all(dotnetList.map((item) => ListToJson<T>(item)));
+  return Promise.all(dotnetList.map((item) => toJson<T>(item)));
 }

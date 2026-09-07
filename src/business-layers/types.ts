@@ -1,34 +1,78 @@
+
 /**
- * Describes one business layer as a plain config object — this is the
- * *entire* thing you write to expose a new .NET BusinessLayer method as an
- * HTTP endpoint. No controller/service/route files needed; the generic
- * router in routes/business-layer.router.ts reads this and does the rest.
+ * Context yang diberikan ke `handler` custom.
+ * Bisa dipakai untuk memanggil .NET BusinessLayer tanpa import langsung.
  */
-export interface BusinessLayerDefinition<TBody = any> {
-  /** Route segment. Endpoint becomes POST /medinfras/api/{name} */
-  name: string;
+export interface BusinessLayerContext {
+  getBusinessLayer: () => Promise<any>;
+  toJson: <T = unknown>(dotnetObject: unknown) => Promise<T>;
+  toJsonList: <T = unknown>(dotnetList: unknown[] | null | undefined) => Promise<T[]>;
+}
 
-  /** The static method name to call on the .NET BusinessLayer class. */
-  method: string;
+/**
+ * Satu operation di dalam business layer.
+ *
+ * Ada 2 cara implementasi:
+ *
+ * 1. SIMPLE MODE
+ *    Gunakan `method` + `buildArgs`.
+ *    Router akan memanggil method .NET dan mengatur hasil sesuai `resultShape`.
+ *
+ * 2. ADVANCED MODE
+ *    Gunakan `handler` untuk kebutuhan yang lebih kompleks,
+ *    misalnya join atau beberapa pemanggilan method .NET.
+ *
+ *    Jika `handler` tersedia, `method` dan `buildArgs` tidak digunakan.
+ */
+export interface BusinessLayerOperation<TBody = any> {
+  /** Route di bawah base path group, misalnya `list`, `get`, atau `insert`. */
+  route: string;
 
-  /** Short description shown in Swagger. */
   summary?: string;
-
-  /** Example request body shown in Swagger's "Try it out". */
   example?: TBody;
 
-  /**
-   * Validates the request body before calling .NET.
-   * Return an error message to reject with 400, or null/undefined if valid.
-   */
+  /** Validasi request body. Return pesan error jika tidak valid. */
   validate?: (body: TBody) => string | null | undefined;
 
-  /** Maps the request body into the ordered arguments for the .NET method call. */
-  buildArgs: (body: TBody) => unknown[];
+  // --- simple mode ---
+
+  /** Nama method static BusinessLayer .NET yang akan dipanggil. */
+  method?: string;
+
+  /** Mengubah request body menjadi argumen untuk method .NET. */
+  buildArgs?: (body: TBody) => unknown[];
 
   /**
-   * Set to false if the .NET method returns a single object instead of a
-   * list. Defaults to true (list), since that's the common case.
+   * Menentukan bentuk hasil dari method .NET:
+   * - `list`   -> hasil berupa list, diproses dengan `toJsonList()`
+   * - `object` -> hasil berupa object, diproses dengan `toJson()`
+   * - `raw`    -> hasil primitive seperti int, bool, atau string
    */
-  returnsList?: boolean;
+  resultShape?: 'list' | 'object' | 'raw';
+
+  // --- advanced mode ---
+
+  /**
+   * Handler custom untuk operasi yang lebih kompleks.
+   * Bisa memanggil satu atau beberapa method .NET sekaligus.
+   */
+  handler?: (body: TBody, ctx: BusinessLayerContext) => Promise<unknown>;
+}
+
+/**
+ * Group dari beberapa operation yang masih satu business layer.
+ *
+ * Contoh:
+ * - `settingParameter`
+ * - `patient`
+ *
+ * Satu definition = satu group.
+ * Satu group bisa memiliki banyak operation seperti get, list, insert,
+ * update, delete, atau fungsi lain yang masih berkaitan.
+ */
+export interface BusinessLayerDefinition {
+  /** Nama group yang menjadi base path `/medinfras/api/{name}`. */
+  name: string;
+
+  operations: BusinessLayerOperation[];
 }
