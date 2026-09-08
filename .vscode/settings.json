@@ -8,6 +8,13 @@
     "source.fixAll.eslint": "never"
   },
   "cSpell.language": "en,id-id",
-  "cSpell.words": ["ADALAH", "alkes", "Getv", "isdeleted", "Medinfras"],
+  "cSpell.words": [
+    "ADALAH",
+    "alkes",
+    "Extractpatient",
+    "Getv",
+    "isdeleted",
+    "Medinfras"
+  ],
   "js/ts.tsdk.path": "node_modules\\typescript\\lib"
 }
